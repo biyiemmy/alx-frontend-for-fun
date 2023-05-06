@@ -6,6 +6,7 @@ A script that converts Markdown to HTML.
 import sys
 import os
 import re
+import hashlib
 
 
 def convert_markdown_to_html(input_file, output_file):
@@ -41,7 +42,7 @@ def convert_markdown_to_html(input_file, output_file):
                 heading_level = len(match.group(1))
                 heading_text = match.group(2)
                 html_lines.append(
-                    f"<h{heading_level}>{heading_text}</h{heading_level}>")
+                    f"<h{heading_level}>{parse_inline_markup(heading_text)}</h{heading_level}>")
             else:
                 # Check for Markdown list items
                 match = re.match(r"^[*-]\s(.*)$", line)
@@ -98,9 +99,45 @@ def parse_inline_markup(text):
     """
     bold_pattern = r"\*\*(.+?)\*\*"
     emphasis_pattern = r"__(.+?)__"
+    md5_pattern = r"\[\[(.+?)\]\]"
+    remove_c_pattern = r"\(\((.*?)\)\)"
     text = re.sub(bold_pattern, r"<b>\1</b>", text)
     text = re.sub(emphasis_pattern, r"<em>\1</em>", text)
+    text = re.sub(md5_pattern, lambda x: hashlib.md5(
+        x.group(1).encode()).hexdigest(), text)
+    text = re.sub(remove_c_pattern, '', text)
     return text
+
+
+def parse_markup(text):
+    """
+    Parses markup syntax for headings, lists, and inline markup.
+    """
+    lines = text.split("\n")
+    parsed_lines = []
+    in_list = False
+    for line in lines:
+        if line.startswith("#"):
+            # Heading
+            level = len(line.split()[0])
+            parsed_lines.append(f"<h{level}>{line[level+1:]}</h{level}>")
+        elif line.startswith("*"):
+            # Unordered List Item
+            if not in_list:
+                in_list = True
+                parsed_lines.append("<ul>")
+            parsed_lines.append(f"<li>{line[2:]}</li>")
+        elif in_list:
+            # End of List
+            in_list = False
+            parsed_lines.append("</ul>")
+        else:
+            # Regular Paragraph
+            parsed_lines.append(parse_inline_markup(line))
+        if in_list:
+            # End of List
+            parsed_lines.append("</ul>")
+    return "\n".join(parsed_lines)
 
 
 if __name__ == "__main__":
