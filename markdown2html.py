@@ -56,6 +56,11 @@ def convert_markdown_to_html(input_file, output_file):
                     if not in_paragraph and line.strip() != "":
                         html_lines.append("<p>")
                         in_paragraph = True
+                        # Indent the first line of the paragraph
+                        line = f"    {line}"
+                    elif in_paragraph and line.strip() == "":
+                        html_lines.append("</p>")
+                        in_paragraph = False
                     html_lines.append(line.rstrip())
 
         if in_list:
