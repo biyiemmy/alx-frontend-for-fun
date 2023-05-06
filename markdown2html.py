@@ -23,6 +23,8 @@ def convert_markdown_to_html(input_file, output_file):
         in_list = False
         list_type = ""
         in_paragraph = False
+        in_bold = False
+        in_emphasis = False
         for line in f:
             # Check for Markdown headings
             match = re.match(r"^(#+) (.*)$", line)
@@ -30,6 +32,12 @@ def convert_markdown_to_html(input_file, output_file):
                 if in_paragraph:
                     html_lines.append("</p>")
                     in_paragraph = False
+                if in_bold:
+                    html_lines.append("</b>")
+                    in_bold = False
+                if in_emphasis:
+                    html_lines.append("</em>")
+                    in_emphasis = False
                 heading_level = len(match.group(1))
                 heading_text = match.group(2)
                 html_lines.append(
@@ -41,6 +49,12 @@ def convert_markdown_to_html(input_file, output_file):
                     if in_paragraph:
                         html_lines.append("</p>")
                         in_paragraph = False
+                    if in_bold:
+                        html_lines.append("</b>")
+                        in_bold = False
+                    if in_emphasis:
+                        html_lines.append("</em>")
+                        in_emphasis = False
                     list_item_text = match.group(1)
                     if not in_list:
                         list_type = "ul"
@@ -48,7 +62,8 @@ def convert_markdown_to_html(input_file, output_file):
                             list_type = "ol"
                         html_lines.append(f"<{list_type}>")
                         in_list = True
-                    html_lines.append(f"<li>{list_item_text.strip()}</li>")
+                    html_lines.append(
+                        f"<li>{parse_inline_markup(list_item_text)}</li>")
                 else:
                     if in_list:
                         html_lines.append(f"</{list_type}>")
@@ -61,16 +76,31 @@ def convert_markdown_to_html(input_file, output_file):
                     elif in_paragraph and line.strip() == "":
                         html_lines.append("</p>")
                         in_paragraph = False
-                    html_lines.append(line.rstrip())
+                    html_lines.append(parse_inline_markup(line.rstrip()))
 
         if in_list:
             html_lines.append(f"</{list_type}>")
         if in_paragraph:
             html_lines.append("</p>")
+        if in_bold:
+            html_lines.append("</b>")
+        if in_emphasis:
+            html_lines.append("</em>")
 
     # Write the HTML output to a file
     with open(output_file, "w", encoding="utf-8") as f:
         f.write("\n".join(html_lines))
+
+
+def parse_inline_markup(text):
+    """
+    Parses inline markup syntax for bold and emphasis.
+    """
+    bold_pattern = r"\*\*(.+?)\*\*"
+    emphasis_pattern = r"__(.+?)__"
+    text = re.sub(bold_pattern, r"<b>\1</b>", text)
+    text = re.sub(emphasis_pattern, r"<em>\1</em>", text)
+    return text
 
 
 if __name__ == "__main__":
