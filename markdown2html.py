@@ -22,10 +22,14 @@ def convert_markdown_to_html(input_file, output_file):
         html_lines = []
         in_list = False
         list_type = ""
+        in_paragraph = False
         for line in f:
             # Check for Markdown headings
             match = re.match(r"^(#+) (.*)$", line)
             if match:
+                if in_paragraph:
+                    html_lines.append("</p>")
+                    in_paragraph = False
                 heading_level = len(match.group(1))
                 heading_text = match.group(2)
                 html_lines.append(
@@ -34,6 +38,9 @@ def convert_markdown_to_html(input_file, output_file):
                 # Check for Markdown list items
                 match = re.match(r"^[*-]\s(.*)$", line)
                 if match:
+                    if in_paragraph:
+                        html_lines.append("</p>")
+                        in_paragraph = False
                     list_item_text = match.group(1)
                     if not in_list:
                         list_type = "ul"
@@ -46,10 +53,15 @@ def convert_markdown_to_html(input_file, output_file):
                     if in_list:
                         html_lines.append(f"</{list_type}>")
                         in_list = False
+                    if not in_paragraph and line.strip() != "":
+                        html_lines.append("<p>")
+                        in_paragraph = True
                     html_lines.append(line.rstrip())
 
         if in_list:
             html_lines.append(f"</{list_type}>")
+        if in_paragraph:
+            html_lines.append("</p>")
 
     # Write the HTML output to a file
     with open(output_file, "w", encoding="utf-8") as f:
