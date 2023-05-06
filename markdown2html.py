@@ -42,7 +42,9 @@ def convert_markdown_to_html(input_file, output_file):
                 heading_level = len(match.group(1))
                 heading_text = match.group(2)
                 html_lines.append(
-                    f"<h{heading_level}>{parse_inline_markup(heading_text)}</h{heading_level}>")
+                    f"<h{heading_level}>{parse_inline_markup(heading_text)}"
+                    f"</h{heading_level}>"
+                )
             else:
                 # Check for Markdown list items
                 match = re.match(r"^[*-]\s(.*)$", line)
@@ -143,7 +145,8 @@ def parse_markup(text):
 if __name__ == "__main__":
     # Check that the correct number of arguments were provided
     if len(sys.argv) != 3:
-        print("Usage: ./markdown2html.py <input_file> <output_file>", file=sys.stderr)
+        print("Usage: ./markdown2html.py <input_file> <output_file>",
+              file=sys.stderr)
         sys.exit(1)
 
     # Get the input and output file names from the command-line arguments
