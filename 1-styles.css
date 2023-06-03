@@ -1,0 +1,57 @@
+a {
+    text-decoration: none;
+    position: relative;
+    color: red;
+}
+
+a::before {
+    content: "";
+    bottom: 0;
+    width: 0;
+    height: 2px;
+    position: absolute;
+    transition: 0.9s ease;
+}
+
+a:hover::before {
+    left: 0;
+    background-color: red;
+    width: 100%;
+}
+
+
+
+
+
+
+
+/* h2 {
+    position: relative;
+    display: inline-block;
+}
+
+a {
+    position: relative;
+    text-decoration: none;
+    cursor: pointer;
+    color: red;
+}
+
+a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    /* Adjust as needed to position the underline */
+    width: 0;
+    height: 2px;
+    background-color: rgb(247, 9, 9);
+    /* Adjust color as desired */
+    transition: width 0.3s ease;
+    /* Add transition effect for smooth animation */
+}
+
+a:hover::after {
+    width: 100%;
+    /* Extend the width of the underline on hover */
+} */
